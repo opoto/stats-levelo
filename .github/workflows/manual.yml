@@ -1,0 +1,40 @@
+# Periodic stats update
+
+name: data update
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow every hour
+  schedule:
+    - cron: '0 * * * *'
+
+  # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+
+      - name: execute stat script
+        run: |
+          ./run.sh
+      - name: commit updates
+        run: |
+          x="$(git status -s | xargs)"
+          if [ "$x" != "" ]
+          then
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git commit -a -m "Data updated"
+            git push
+          else
+            echo "nothing to commit"
+          fi
