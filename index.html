@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistiques levélo Marseille</title>
+</head>
+
+<body>
+  <h1>Statistiques levélo Marseille</h1>
+  <div>Informations collectées depuis <a
+      href="https://data.ampmetropole.fr/explore/dataset/gbfs-donnees-gbfs-levelo-a-marseille/table/?q=">les
+      données publiques de la métropole Aix-Marseille</a></div>
+
+  <div id="status">
+    Chargement en cours
+  </div>
+  <div id="content">
+    <h2>Bikes</h2>
+    <table id="tbikes"></table>
+    <h2>Stations</h2>
+    <table id="tstations"></table>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+  <script src="js/jquery.csv.min.js"></script>
+  <script>
+
+    let loading = 2;
+
+    function processData(csv, tdata) {
+      if (--loading <= 0) {
+        $("#status").text("");
+      }
+      let entries = $.csv.toObjects(csv);
+      let last = entries[entries.length - 1];
+      $.each(last, function (k, v) {
+        v = v.trim();
+        if (k.trim() == "date") {
+          v = new Date(v*1000).toLocaleString();
+        }
+        tdata.append(`<tr><td>${k}:</td><td>${v}</td></tr>`);
+      });
+    }
+
+    $(document).ready(function () {
+      $.ajax({
+        type: "GET",
+        url: "data/2023-02_bikes.csv",
+        dataType: "text",
+        success: function (data) { processData(data, $("#tbikes")); }
+      });
+
+      $.ajax({
+        type: "GET",
+        url: "data/2023-02_stations.csv",
+        dataType: "text",
+        success: function (data) { processData(data, $("#tstations")); }
+      });
+    });
+
+  </script>
+</body>
+
+</html>
