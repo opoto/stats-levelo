@@ -25,7 +25,7 @@ jobs:
 
       - name: execute stat script
         run: |
-          ./run.sh
+          ./bin/run.sh
       - name: commit updates
         run: |
           x="$(git status -s | xargs)"

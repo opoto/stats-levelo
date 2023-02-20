@@ -46,6 +46,6 @@ echo Not returning: $stations_not_returning
 
 if [ "$2" != "-noout" ]
 then
-  echo $bikes_date,$bikes_nb,$bikes_for_rent,$bikes_disabled,$bikes_reserved,$bikes_no_station>> ${current_month}_bikes.csv
-  echo $stations_date,$stations_nb,$stations_ready,$stations_not_empty,$stations_not_full,$stations_not_installed,$stations_not_renting,$stations_not_returning>> ${current_month}_stations.csv
+  echo $bikes_date,$bikes_nb,$bikes_for_rent,$bikes_disabled,$bikes_reserved,$bikes_no_station>> data/${current_month}_bikes.csv
+  echo $stations_date,$stations_nb,$stations_ready,$stations_not_empty,$stations_not_full,$stations_not_installed,$stations_not_renting,$stations_not_returning>> data/${current_month}_stations.csv
 fi
