@@ -18,8 +18,8 @@ bikes_for_rent=$(jq '.data.stations[] | select (.is_renting==true) | .num_bikes_
 
 stations_date=$(jq '.last_updated ' data/station_status.json)
 stations_nb=$(jq '.data.stations[].station_id ' data/station_status.json | wc -l)
-stations_not_empty=$(jq '.data.stations[] | select ((.is_renting==true) and (.num_bikes_available>0)) | .station_id ' data/station_status.json | wc -l)
-stations_not_full=$(jq '.data.stations[] | select ((.is_returning==true) and (.num_docks_available>0)) | .station_id ' data/station_status.json | wc -l)
+stations_renting=$(jq '.data.stations[] | select ((.is_renting==true) and (.num_bikes_available>0)) | .station_id ' data/station_status.json | wc -l)
+stations_returning=$(jq '.data.stations[] | select ((.is_returning==true) and (.num_docks_available>0)) | .station_id ' data/station_status.json | wc -l)
 stations_not_installed=$(jq '.data.stations[] | select (.is_installed==false) | .station_id ' data/station_status.json | wc -l)
 stations_not_renting=$(jq '.data.stations[] | select (.is_renting==false) | .station_id ' data/station_status.json | wc -l)
 stations_not_returning=$(jq '.data.stations[] | select (.is_returning==false) | .station_id ' data/station_status.json | wc -l)
@@ -38,8 +38,8 @@ echo "STATIONS"
 echo Date: $(date -j -f "%s" +"%Y-%m-%d %H:%M:%S" $stations_date)
 echo Total: $stations_nb
 echo Ready: $stations_ready
-echo Not empty: $stations_not_empty
-echo Not full: $stations_not_full
+echo Renting: $stations_renting
+echo Returning: $stations_returning
 echo Not installed: $stations_not_installed
 echo Not renting: $stations_not_renting
 echo Not returning: $stations_not_returning
@@ -47,5 +47,5 @@ echo Not returning: $stations_not_returning
 if [ "$2" != "-noout" ]
 then
   echo $bikes_date,$bikes_nb,$bikes_for_rent,$bikes_disabled,$bikes_reserved,$bikes_no_station>> data/${current_month}_bikes.csv
-  echo $stations_date,$stations_nb,$stations_ready,$stations_not_empty,$stations_not_full,$stations_not_installed,$stations_not_renting,$stations_not_returning>> data/${current_month}_stations.csv
+  echo $stations_date,$stations_nb,$stations_ready,$stations_renting,$stations_returning,$stations_not_installed,$stations_not_renting,$stations_not_returning>> data/${current_month}_stations.csv
 fi
