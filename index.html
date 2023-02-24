@@ -244,10 +244,12 @@
         $("#status").text("");
       }
       console.debug("d3:", data);
+      function zeros(v, sz) {
+        return ("0000" + v).slice(0-sz);
+      }
       $.each(data.slice(-1)[0], function (name, data) {
         if (name == "date") {
-          let d = new Date(data * 1000);
-          data = d.getDate() +"-"+ (d.getMonth()+1) +"-"+ d.getFullYear() +" "+ d.getHours() +":"+ d.getMinutes()
+          data = zeros(data.getDate(), 2) +"-"+ zeros(data.getMonth()+1, 2) +"-"+ data.getFullYear() +" "+ zeros(data.getHours(), 2) +":"+ zeros(data.getMinutes(), 2);
         }
         config.table.append(`<tr><td>${i18n.get(name)}:</td><td>${data}</td></tr>`);
       });
