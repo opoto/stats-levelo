@@ -91,6 +91,7 @@
       const O = d3.map(data, d => d);
       if (defined === undefined) defined = (d, i) => !isNaN(X[i]) && !isNaN(Y[i]);
       const D = d3.map(data, defined);
+      const C = d3.map(data, color);
 
       // Compute default domains, and unique the z-domain.
       if (xDomain === undefined) xDomain = d3.extent(X);
@@ -237,19 +238,21 @@
             date: entry.date,
             category: array.name,
             value: entry.value,
-            color: config.lines[array.name].color
           });
         });
       });
       console.debug("flat:", flat);
 
+      function colZ(z) {
+        return typeof(z) == "string" ? config.lines[z].color : undefined;
+      }
       let lineChart = LineChart(flat, {
         x: d => d.date,
         y: d => d.value,
         z: d => d.category,
         width: 500,
         height: 300,
-        //color: (d) => d.color,
+        color: colZ,
         //yLabel: value.title,
         zDomain: Object.keys(config.lines),
         title: (d) => d.category + ": " + d.value,
