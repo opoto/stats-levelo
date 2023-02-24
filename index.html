@@ -7,10 +7,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Statistiques levélo Marseille</title>
   <style>
-    table, .chart {
+    table,
+    .chart {
       margin: 10px;
       display: inline-block;
       vertical-align: middle;
+    }
+
+    footer {
+      font-style: italic;
+      font-size: 80%;
+      color: slategray;
+    }
+
+    a {
+      text-decoration: none;
+      color: slategray;
     }
   </style>
 </head>
@@ -25,7 +37,7 @@
     Chargement en cours
   </div>
   <div id="content">
-    <h2>Bikes</h2>
+    <h2>Vélos</h2>
     <div>
       <table id="bikes-table"></table>
       <div id="bikes-chart" class="chart"></div>
@@ -36,11 +48,42 @@
       <div id="stations-chart" class="chart"></div>
     </div>
   </div>
+  <footer><a href="https://github.com/opoto/stats-levelo">Code source</a></footer>
 
   <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
   <script>
+
+    const i18n = {
+      default: "fr",
+      current: "fr",
+      strings: {
+        "fr": {
+          "bikes": "Vélos",
+          "date": "Date",
+          "nb": "Nombre total",
+          "for_rent": "A louer",
+          "disabled": "Hors-service",
+          "reserved": "Réservés",
+          "no_station": "Hors station",
+          "stations": "Stations",
+          "ready": "En service",
+          "renting": "Avec vélo disponible",
+          "returning": "Avec dock libre",
+          "not_installed": "Hors-service",
+          "not_renting": "Pas de location",
+          "not_returning": "Pas de retour"
+        },
+        "en": {
+
+        }
+      },
+      get: (name, params) => {
+        let v = i18n.strings[i18n.current][name];
+        return v ? v : i18n.strings[i18n.default][name];
+      }
+    }
 
     let loading = 2;
 
@@ -203,9 +246,10 @@
       console.debug("d3:", data);
       $.each(data.slice(-1)[0], function (name, data) {
         if (name == "date") {
-          data = new Date(data * 1000).toLocaleString();
+          let d = new Date(data * 1000);
+          data = d.getDate() +"-"+ (d.getMonth()+1) +"-"+ d.getFullYear() +" "+ d.getHours() +":"+ d.getMinutes()
         }
-        config.table.append(`<tr><td>${name}:</td><td>${data}</td></tr>`);
+        config.table.append(`<tr><td>${i18n.get(name)}:</td><td>${data}</td></tr>`);
       });
 
       let flat = [];
@@ -234,7 +278,7 @@
         color: colZ,
         //yLabel: value.title,
         zDomain: Object.keys(config.lines),
-        title: (d) => d.category + ": " + d.value,
+        title: (d) => i18n.get(d.category) + ": " + d.value,
         voronoi: false // if true, show Voronoi overlay
       });
       config.chart.append(lineChart);
@@ -281,7 +325,7 @@
     };
 
     function convertor(d) {
-      d.date = new Date(d.date * 1000);
+      d.date = new Date(Number.parseInt(d.date) * 1000);
       return d;
     }
     $(document).ready(function () {
