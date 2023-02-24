@@ -13,7 +13,7 @@ bikes_date=$(jq '.last_updated ' data/free_bike_status.json)
 bikes_nb=$(jq '.data.bikes[].bike_id ' data/free_bike_status.json  | wc -l)
 bikes_disabled=$(jq '.data.bikes[] | select (.is_disabled == true) | .bike_id' data/free_bike_status.json | wc -l)
 bikes_reserved=$(jq '.data.bikes[] | select (.is_reserved == true) | .bike_id' data/free_bike_status.json | wc -l)
-bikes_no_station=$(jq '.data.bikes[] | select (.is_disabled == false) | .station_id' data/free_bike_status.json | grep "\"\"" | wc -l)
+bikes_no_station=$(jq '.data.bikes[] | select ((.is_disabled == false) and (.station_id == "")) | .station_id' data/free_bike_status.json | wc -l)
 bikes_for_rent=$(jq '.data.stations[] | select (.is_renting==true) | .num_bikes_available ' data/station_status.json | awk '{sum+=$0} END{print sum}')
 
 stations_date=$(jq '.last_updated ' data/station_status.json)
