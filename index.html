@@ -57,7 +57,7 @@
 
     const i18n = {
       default: "fr",
-      current: "fr",
+      current: navigator.language.substring(0,2),
       strings: {
         "fr": {
           "bikes": "Vélos",
@@ -76,7 +76,20 @@
           "not_returning": "Pas de retour"
         },
         "en": {
-
+          "bikes": "Bikes",
+          "date": "Date",
+          "nb": "Total number",
+          "for_rent": "To rent",
+          "disabled": "Disabled",
+          "reserved": "Reserved",
+          "no_station": "Not in station",
+          "stations": "Stations",
+          "ready": "Ready",
+          "renting": "With available bike",
+          "returning": "With available dock",
+          "not_installed": "Not installed",
+          "not_renting": "Not renting",
+          "not_returning": "Not returning"
         }
       },
       get: (name, params) => {
