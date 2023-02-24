@@ -206,14 +206,10 @@
       return Object.assign(svg.node(), { value: null });
     }
 
-    function processData(csv, config) {
+    function processData(data, config) {
       if (--loading <= 0) {
         $("#status").text("");
       }
-      let data = d3.csvParse(csv, (d) => {
-        d.date = new Date(d.date * 1000);
-        return d;
-      });
       console.debug("d3:", data);
       $.each(data.slice(-1)[0], function (name, data) {
         if (name == "date") {
@@ -222,29 +218,22 @@
         config.table.append(`<tr><td>${name}:</td><td>${data}</td></tr>`);
       });
 
-      var dataReady = Object.keys(config.lines).map(function (grpName) {
-        return {
-          name: grpName,
-          values: data.map(function (d) {
-            return { date: d.date, value: +d[grpName] };
-          })
-        };
-      });
-      console.debug("data ready:", dataReady);
       let flat = [];
-      $.each(dataReady, (name, array) => {
-        $.each(array.values, (i, entry) => {
-          flat.push({
-            date: entry.date,
-            category: array.name,
-            value: entry.value,
-          });
+      $.each(data, (i, entry) => {
+        $.each(entry, (name, value) => {
+          if (name != "date") {
+            flat.push({
+              date: entry.date,
+              category: name,
+              value: value,
+            });
+          }
         });
       });
       console.debug("flat:", flat);
 
       function colZ(z) {
-        return typeof(z) == "string" ? config.lines[z].color : undefined;
+        return typeof (z) == "string" ? config.lines[z].color : undefined;
       }
       let lineChart = LineChart(flat, {
         x: d => d.date,
@@ -301,24 +290,19 @@
       }
     };
 
+    function convertor(d) {
+      d.date = new Date(d.date * 1000);
+      return d;
+    }
     $(document).ready(function () {
-      $.ajax({
-        type: "GET",
-        url: "data/2023-02_bikes.csv",
-        dataType: "text",
-        success: function (data) {
-          processData(data, CONFIG.bikes);
-        }
+      d3.csv("data/2023-02_bikes.csv", convertor).then((data) => {
+        processData(data, CONFIG.bikes);
       });
 
-      $.ajax({
-        type: "GET",
-        url: "data/2023-02_stations.csv",
-        dataType: "text",
-        success: function (data) {
-          processData(data, CONFIG.stations);
-        }
+      d3.csv("data/2023-02_stations.csv", convertor).then((data) => {
+        processData(data, CONFIG.stations);
       });
+
     });
 
   </script>
