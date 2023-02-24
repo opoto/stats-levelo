@@ -7,8 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Statistiques levélo Marseille</title>
   <style>
-    table {
-      width: 100%;
+    table, .chart {
+      margin: 10px;
+      display: inline-block;
+      vertical-align: middle;
     }
   </style>
 </head>
@@ -24,27 +26,15 @@
   </div>
   <div id="content">
     <h2>Bikes</h2>
-    <table>
-      <tr>
-        <td>
-          <table id="bikes-table"></table>
-        </td>
-        <td>
-          <div id="bikes-chart"></div>
-        </td>
-      </tr>
-    </table>
+    <div>
+      <table id="bikes-table"></table>
+      <div id="bikes-chart" class="chart"></div>
+    </div>
     <h2>Stations</h2>
-    <table>
-      <tr>
-        <td>
-          <table id="stations-table"></table>
-        </td>
-        <td>
-          <div id="stations-chart"></div>
-        </td>
-      </tr>
-    </table>
+    <div>
+      <table id="stations-table"></table>
+      <div id="stations-chart" class="chart"></div>
+    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
