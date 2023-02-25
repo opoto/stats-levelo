@@ -22,19 +22,25 @@
 
     a {
       text-decoration: none;
-      color: slategray;
+      color: rgb(86, 139, 192);
     }
   </style>
 </head>
 
 <body>
   <h1>Statistiques levélo Marseille</h1>
-  <div>Informations collectées depuis <a
-      href="https://data.ampmetropole.fr/explore/dataset/gbfs-donnees-gbfs-levelo-a-marseille/table/?q=">les
-      données publiques de la métropole Aix-Marseille</a></div>
+  <p>Informations collectées depuis les <a
+      href="https://data.ampmetropole.fr/explore/dataset/gbfs-donnees-gbfs-levelo-a-marseille/table/?q=">
+      données publiques de la métropole Aix-Marseille</a></p>
 
-  <div id="status">
-    Chargement en cours
+  <div>
+    Mois de l'historique:
+    <button id="month-previous">⏪</button>
+    <select id="month-select"></select>
+    <button id="month-next">⏩</button>
+    <span id="status">
+      Chargement en cours
+    </span>
   </div>
   <div id="content">
     <h2>Vélos</h2>
@@ -57,7 +63,7 @@
 
     const i18n = {
       default: "fr",
-      current: navigator.language.substring(0,2),
+      current: navigator.language.substring(0, 2),
       strings: {
         "fr": {
           "bikes": "Vélos",
@@ -73,7 +79,9 @@
           "returning": "Avec dock libre",
           "not_installed": "Hors-service",
           "not_renting": "Pas de location",
-          "not_returning": "Pas de retour"
+          "not_returning": "Pas de retour",
+          "no_data": "Pas de données au delà !",
+          "load_error": "Erreur de chargement des données"
         },
         "en": {
           "bikes": "Bikes",
@@ -89,7 +97,9 @@
           "returning": "With available dock",
           "not_installed": "Not installed",
           "not_renting": "Not renting",
-          "not_returning": "Not returning"
+          "not_returning": "Not returning",
+          "no_data": "No data for this period!",
+          "load_error": "Error while loading data"
         }
       },
       get: (name, params) => {
@@ -97,9 +107,8 @@
         return v ? v : i18n.strings[i18n.default][name];
       }
     }
-    const dateFormat = d3.timeFormat("%d %b %Y, %H:%M");
 
-    let loading = 2;
+    const dateFormat = d3.timeFormat("%d %b %Y, %H:%M");
 
     function LineChart(data, {
       x = ([x]) => x, // given d in data, returns the (temporal) x-value
@@ -255,7 +264,7 @@
 
     function processData(data, config) {
       if (--loading <= 0) {
-        $("#status").text("");
+        setStatus();
       }
       console.debug("d3:", data);
 
@@ -342,15 +351,109 @@
       d.date = new Date(Number.parseInt(d.date) * 1000);
       return d;
     }
-    $(document).ready(function () {
-      d3.csv("data/2023-02_bikes.csv", convertor).then((data) => {
+    function load(filePrefix) {
+      $("table").empty();
+      $(".chart").empty();
+      d3.csv(`data/${filePrefix}_bikes.csv`, convertor).then((data) => {
         processData(data, CONFIG.bikes);
+      }).catch(() => {
+        setStatus(i18n.get("load_error"));
       });
 
-      d3.csv("data/2023-02_stations.csv", convertor).then((data) => {
+      d3.csv(`data/${filePrefix}_stations.csv`, convertor).then((data) => {
         processData(data, CONFIG.stations);
+      }).catch(() => {
+        setStatus(i18n.get("load_error"));
       });
+    }
 
+    const FIRST_YEAR = 2023, FIRST_MONTH = 1;
+    const NOW = new Date();
+
+    function zeroed(number, sz) {
+      return ("0000000" + number).substr(-sz);
+    }
+    class FileMonth {
+      constructor(year, month) {
+        this.year = year ? Number.parseInt(year) : NOW.getFullYear();
+        this.month = month ? Number.parseInt(month) : NOW.getMonth() + 1;
+      }
+      getFilePrefix() {
+        return `${this.year}-${zeroed(this.month, 2)}`;
+      }
+      nextMonth() {
+        if (this.getFilePrefix() < currentMonth.getFilePrefix()) {
+          if (this.month < 12) {
+            this.month++;
+          } else {
+            this.year++;
+            this.month = 1;
+          }
+          return this.getFilePrefix();
+        }
+      }
+      previousMonth() {
+        if (this.getFilePrefix() > firstMonth.getFilePrefix()) {
+          if (this.month > 1) {
+            this.month--;
+          } else {
+            this.year--;
+            this.month = 12;
+          }
+          return this.getFilePrefix();
+        }
+      }
+    }
+    const currentMonth = new FileMonth();
+    const firstMonth = new FileMonth(FIRST_YEAR, FIRST_MONTH);
+    let loading = 2;
+
+    let statusTimer;
+    function setStatus(message) {
+      $("#status").text(message ? message : "");
+      if (message) {
+        if (statusTimer) {
+          clearTimeout(statusTimer);
+        }
+        statusTimer = setTimeout(() => {
+          $("#status").empty();
+          statusTimer = undefined;
+        }, 2000);
+      }
+    }
+
+    $(document).ready(function () {
+      let firstPrefix = firstMonth.getFilePrefix();
+      let currentPrefix = currentMonth.getFilePrefix();
+      let optMonth = new FileMonth(FIRST_YEAR, FIRST_MONTH);
+      let optPrefix = optMonth.getFilePrefix();
+      while (optPrefix <= currentPrefix) {
+        $("#month-select").append(`<option value="${optPrefix}" year=${optMonth.year} month=${optMonth.month}>${optPrefix}</option>`);
+        optPrefix = optMonth.nextMonth();
+      }
+      load(currentPrefix);
+      $("#month-select").val(currentPrefix);
+      $("#month-select").on("change", (event) => {
+        load($("#month-select").val());
+      });
+      function updateMonth(op) {
+        setStatus();
+        let selected = $("#month-select option:selected");
+        let selMonth = new FileMonth(selected.attr("year"), selected.attr("month"));
+        let newPrefix = selMonth[op]();
+        if (newPrefix) {
+          $("#month-select").val(newPrefix);
+          load(newPrefix);
+        } else {
+          setStatus(i18n.get("no_data"));
+        }
+      }
+      $("#month-previous").on("click", () => {
+        updateMonth("previousMonth");
+      });
+      $("#month-next").on("click", () => {
+        updateMonth("nextMonth");
+      });
     });
 
   </script>
