@@ -5,8 +5,14 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Statistiques levélo Marseille</title>
+  <title>Statistiques du service "levélo Marseille"</title>
   <style>
+    html {
+      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+    h1 {
+      font-size: 120%;
+    }
     table,
     .chart {
       margin: 10px;
@@ -24,11 +30,15 @@
       text-decoration: none;
       color: rgb(86, 139, 192);
     }
+
+    #status {
+      display: inline-block
+    }
   </style>
 </head>
 
 <body>
-  <h1>Statistiques levélo Marseille</h1>
+  <h1>Statistiques du service "levélo Marseille"</h1>
   <p>Informations collectées depuis les <a
       href="https://data.ampmetropole.fr/explore/dataset/gbfs-donnees-gbfs-levelo-a-marseille/table/?q=">
       données publiques de la métropole Aix-Marseille</a></p>
@@ -54,7 +64,7 @@
       <div id="stations-chart" class="chart"></div>
     </div>
   </div>
-  <footer><a href="https://github.com/opoto/stats-levelo">Code source</a></footer>
+  <footer>Ce site n'est pas affilié au service "levélo". Les données ne sont pas garanties exactes. <a href="https://github.com/opoto/stats-levelo">Code source</a></footer>
 
   <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
