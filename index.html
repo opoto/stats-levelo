@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <link rel="icon" href="img/favicon.ico" />
   <meta charset="UTF-8">
@@ -11,20 +12,35 @@
     html {
       font-family: sans-serif;
     }
+
     h1 {
       font-size: 120%;
     }
+
+    h2 {
+      font-size: 110%;
+      border-top: 1px solid black;
+      padding-top: 10px;
+    }
+
     table,
     .chart {
       margin: 10px;
       display: inline-block;
       vertical-align: middle;
+      border-spacing: 10px
+    }
+
+    table td {
+      padding: 5px;
     }
 
     footer {
+      padding-top: 10px;
       font-style: italic;
       font-size: 80%;
       color: slategray;
+      text-align: right;
     }
 
     a {
@@ -34,6 +50,11 @@
 
     #status {
       display: inline-block
+    }
+
+    svg {
+      overflow: visible;
+      overflow-clip-margin: 100px;
     }
   </style>
 </head>
@@ -65,7 +86,9 @@
       <div id="stations-chart" class="chart"></div>
     </div>
   </div>
-  <footer>Ce site n'est pas affilié au service "levélo". Les données ne sont pas garanties exactes. <a href="https://github.com/opoto/stats-levelo">Code source</a></footer>
+  <footer>Ce site n'est pas affilié au service "levélo". Les données ne sont pas garanties exactes.
+    <a href="https://github.com/opoto/stats-levelo">Code source</a>
+  </footer>
 
   <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -121,7 +144,7 @@
 
     const dateFormat = d3.timeFormat("%d %b %Y, %H:%M");
 
-    function LineChart(data, {
+    function LineChart(data, id, {
       x = ([x]) => x, // given d in data, returns the (temporal) x-value
       y = ([, y]) => y, // given d in data, returns the (quantitative) y-value
       z = () => 1, // given d in data, returns the (categorical) z-value
@@ -164,6 +187,7 @@
       if (xDomain === undefined) xDomain = d3.extent(X);
       if (yDomain === undefined) yDomain = [0, d3.max(Y, d => typeof d === "string" ? +d : d)];
       if (zDomain === undefined) zDomain = Z;
+      let legendData = zDomain;
       zDomain = new d3.InternSet(zDomain);
 
       // Omit any data not present in the z-domain.
@@ -256,6 +280,7 @@
         dot.attr("transform", `translate(${xScale(X[i])},${yScale(Y[i])})`);
         if (T) dot.select("text").text(T[i]);
         svg.property("value", O[i]).dispatch("input", { bubbles: true });
+        showStats(id, O[i]);
       }
 
       function pointerentered() {
@@ -268,22 +293,45 @@
         dot.attr("display", "none");
         svg.node().value = null;
         svg.dispatch("input", { bubbles: true });
+        showStats(id);
       }
 
       return Object.assign(svg.node(), { value: null });
     }
 
+    function showStats(id, d) {
+      if (!d) {
+        $.each(lastData[id], (name, value) => {
+          $(`#${id + name}`).text(value);
+        });
+      } else {
+        $(`.${id}`).empty();
+        $(`#${id}date`).text(dateFormat(d.date));
+        $(`#${id + d.category}`).text(d.value);
+      }
+    }
+
+    let lastData = {};
     function processData(data, config) {
       if (--loading <= 0) {
         setStatus();
       }
       console.debug("d3:", data);
 
+      lastData[config.id] = {};
       $.each(data.slice(-1)[0], function (name, data) {
         if (name == "date") {
           data = dateFormat(data);
         }
-        config.table.append(`<tr><td>${i18n.get(name)}:</td><td>${data}</td></tr>`);
+        if (config.lines[name] || (name == "date")) {
+          lastData[config.id][name] = data;
+          let legendColor = (name == "date") ? "" : ` style="outline: 2px solid ${config.lines[name].color}"`;
+          config.table.append(`<tr ${legendColor}>
+            <td>${i18n.get(name)}:</td><td class="${config.id}" id="${config.id + name}">${data}</td>
+          </tr>`);
+        } else {
+          console.log(`${name}: ${data}`);
+        }
       });
 
       let flat = [];
@@ -303,7 +351,7 @@
       function colZ(z) {
         return typeof (z) == "string" ? config.lines[z].color : undefined;
       }
-      let lineChart = LineChart(flat, {
+      let lineChart = LineChart(flat, config.id, {
         x: d => d.date,
         y: d => d.value,
         z: d => d.category,
@@ -312,7 +360,7 @@
         color: colZ,
         //yLabel: value.title,
         zDomain: Object.keys(config.lines),
-        title: (d) => i18n.get(d.category) + ": " + d.value,
+        title: (d) => `${dateFormat(d.date)}: ` + d.value,
         voronoi: false // if true, show Voronoi overlay
       });
       config.chart.append(lineChart);
@@ -321,6 +369,7 @@
 
     const CONFIG = {
       "bikes": {
+        id: "b_",
         table: $("#bikes-table"),
         chart: $("#bikes-chart"),
         lines: {
@@ -339,6 +388,7 @@
         }
       },
       "stations": {
+        id: "s_",
         table: $("#stations-table"),
         chart: $("#stations-chart"),
         lines: {
