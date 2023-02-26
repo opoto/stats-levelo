@@ -190,7 +190,7 @@
 
       // Compute default domains, and unique the z-domain.
       if (xDomain === undefined) xDomain = d3.extent(X);
-      if (yDomain === undefined) yDomain = [0, d3.max(Y, d => typeof d === "string" ? +d : d)];
+      if (yDomain === undefined) yDomain = [Math.max(0,d3.min(Y, d => typeof d === "string" ? +d : d) - 10), d3.max(Y, d => typeof d === "string" ? +d : d)];
       if (zDomain === undefined) zDomain = Z;
       let legendData = zDomain;
       zDomain = new d3.InternSet(zDomain);
@@ -341,10 +341,11 @@
         }
       });
 
+      let linesLabels = Object.keys(config.lines);
       let flat = [];
       $.each(data, (i, entry) => {
         $.each(entry, (name, value) => {
-          if (name != "date") {
+          if (linesLabels.includes(name)) {
             flat.push({
               date: entry.date,
               category: name,
@@ -366,7 +367,7 @@
         height: 300,
         color: colZ,
         //yLabel: value.title,
-        zDomain: Object.keys(config.lines),
+        zDomain: linesLabels,
         title: (d) => d.value,
         voronoi: false // if true, show Voronoi overlay
       });
