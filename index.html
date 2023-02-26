@@ -34,6 +34,9 @@
     table td {
       padding: 5px;
     }
+    table td:first-child {
+      min-width: 160px;
+    }
 
     footer {
       padding-top: 10px;
@@ -54,7 +57,7 @@
 
     svg {
       overflow: visible;
-      overflow-clip-margin: 100px;
+      overflow-clip-margin: 10px;
     }
   </style>
 </head>
@@ -67,9 +70,9 @@
 
   <div>
     Mois de l'historique:
-    <button id="month-previous">⏪</button>
+    <button id="month-previous">&lt;&lt;</button>
     <select id="month-select"></select>
-    <button id="month-next">⏩</button>
+    <button id="month-next">&gt;&gt;</button>
     <span id="status">
       Chargement en cours
     </span>
@@ -323,11 +326,13 @@
       lastData[config.id] = {};
       $.each(data.slice(-1)[0], function (name, data) {
         if (name == "date") {
-          data = dateFormat(data);
-        }
-        if (config.lines[name] || (name == "date")) {
+          lastData[config.id][name] = dateFormat(data);
+          config.table.append(`<tr>
+            <td colspan="2">🕐 <span class="${config.id}" id="${config.id + name}">${lastData[config.id][name]}</span></td>
+          </tr>`);
+        } else if (config.lines[name]) {
           lastData[config.id][name] = data;
-          let legendColor = (name == "date") ? "" : ` style="outline: 2px solid ${config.lines[name].color}"`;
+          let legendColor = ` style="outline: 2px solid ${config.lines[name].color}"`;
           config.table.append(`<tr ${legendColor}>
             <td>${i18n.get(name)}:</td><td class="${config.id}" id="${config.id + name}">${data}</td>
           </tr>`);
@@ -362,7 +367,7 @@
         color: colZ,
         //yLabel: value.title,
         zDomain: Object.keys(config.lines),
-        title: (d) => `${dateFormat(d.date)}: ` + d.value,
+        title: (d) => d.value,
         voronoi: false // if true, show Voronoi overlay
       });
       config.chart.append(lineChart);
