@@ -102,12 +102,13 @@
         "fr": {
           "bikes": "Vélos",
           "date": "Date",
-          "nb": "Nombre total",
+          "bikes_nb": "Nombre de vélos",
           "for_rent": "A louer",
           "disabled": "Hors-service",
           "reserved": "Réservés",
           "no_station": "Hors station",
           "stations": "Stations",
+          "stations_nb": "Nombre de stations",
           "ready": "En service",
           "renting": "Avec vélo disponible",
           "returning": "Avec dock libre",
@@ -120,12 +121,13 @@
         "en": {
           "bikes": "Bikes",
           "date": "Date",
-          "nb": "Total number",
+          "bikes_nb": "Number of bikes",
           "for_rent": "To rent",
           "disabled": "Disabled",
           "reserved": "Reserved",
           "no_station": "Not in station",
           "stations": "Stations",
+          "stations_nb": "Number of stations",
           "ready": "Ready",
           "renting": "With available bike",
           "returning": "With available dock",
@@ -373,17 +375,14 @@
         table: $("#bikes-table"),
         chart: $("#bikes-chart"),
         lines: {
-          nb: {
-            color: "blue",
-            title: "Nombre de vélos"
+          bikes_nb: {
+            color: "blue"
           },
           for_rent: {
-            color: "green",
-            title: "Vélos disponibles"
+            color: "green"
           },
           no_station: {
-            color: "red",
-            title: "Vélos isolés"
+            color: "red"
           }
         }
       },
@@ -392,17 +391,14 @@
         table: $("#stations-table"),
         chart: $("#stations-chart"),
         lines: {
-          nb: {
-            color: "blue",
-            title: "Nombre de stations"
+          stations_nb: {
+            color: "blue"
           },
           renting: {
-            color: "green",
-            title: "Avec vélo"
+            color: "green"
           },
           returning: {
-            color: "purple",
-            title: "Avec dock"
+            color: "purple"
           }
         }
       }
