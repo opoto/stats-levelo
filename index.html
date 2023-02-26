@@ -6,8 +6,10 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ce site fournit des statistiques sur les vélos et stations en location par la métropole Aix-Marseille">
+  <meta name="keywords" content="Marseille, métropole, levélo, levelo, vélo">
 
-  <title>Statistiques du service "levélo Marseille"</title>
+  <title class="i18n" i18n="title">Statistiques du service "levélo Marseille"</title>
   <style>
     html {
       font-family: sans-serif;
@@ -38,6 +40,7 @@
     table td:first-child {
       min-width: 160px;
     }
+
     table td:nth-child(2) {
       min-width: 40px;
     }
@@ -62,34 +65,39 @@
 </head>
 
 <body>
-  <h1>Statistiques du service "levélo Marseille"</h1>
-  <p>Informations collectées depuis les <a
+  <h1 class="i18n" i18n="title">Statistiques du service "levélo Marseille"</h1>
+  <p><span class="i18n" i18n="info-intro">Informations collectées depuis les </span>
+    <a class="i18n" i18n="info-data"
       href="https://data.ampmetropole.fr/explore/dataset/gbfs-donnees-gbfs-levelo-a-marseille/table/?q=">
-      données publiques de la métropole Aix-Marseille</a></p>
+      données publiques de la métropole Aix-Marseille</a>
+  </p>
 
   <div>
-    Mois de l'historique:
+    <span class="i18n" i18n="month">Mois de l'historique:</span>
     <button id="month-previous">&lt;&lt;</button>
     <select id="month-select"></select>
     <button id="month-next">&gt;&gt;</button>
-    <span id="status">
+    <span id="status" class="i18n" i18n="loading">
       Chargement en cours
     </span>
   </div>
   <div id="content">
-    <h2>Vélos</h2>
+    <h2 class="i18n" i18n="bikes">Vélos</h2>
     <div>
       <table id="bikes-table"></table>
       <div id="bikes-chart" class="chart"></div>
     </div>
-    <h2>Stations</h2>
+    <h2 class="i18n" i18n="stations">Stations</h2>
     <div>
       <table id="stations-table"></table>
       <div id="stations-chart" class="chart"></div>
     </div>
   </div>
-  <footer>Ce site n'est pas affilié au service "levélo". Les données ne sont pas garanties exactes.
-    <a href="https://github.com/opoto/stats-levelo">Code source</a>
+  <footer>
+    <span class="i18n" i18n="footer">
+      Ce site n'est pas affilié au service "levélo". Les données ne sont pas garanties exactes.
+    </span>
+    <a href="https://github.com/opoto/stats-levelo" class="i18n" i18n="code">Code source</a>
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
@@ -121,6 +129,13 @@
           "load_error": "Erreur de chargement des données"
         },
         "en": {
+          "title": 'Statistics about "levélo Marseille"',
+          "info-intro": "Data is collected from",
+          "info-data": "métropole Aix-Marseille's open data",
+          "month": "Month displayed:",
+          "loading": "Loading...",
+          "footer": 'This site is independent from "levélo". Content is not guaranteed to be exact.',
+          "code": "Source code",
           "bikes": "Bikes",
           "date": "Date",
           "bikes_nb": "Number of bikes",
@@ -145,6 +160,13 @@
         return v ? v : i18n.strings[i18n.default][name];
       }
     }
+    $(".i18n").each((i, elt) => {
+      let key = elt.getAttribute("i18n");
+      let translated = key ? i18n.get(key) : undefined;
+      if (translated) {
+        elt.innerText = translated;
+      }
+    });
 
     let dateFormat = d3.timeFormat("%a %d %b %Y, %H:%M"); // default
     d3.json(`https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/${navigator.language}.json`).then(locale => {
