@@ -34,6 +34,7 @@
     table td {
       padding: 5px;
     }
+
     table td:first-child {
       min-width: 160px;
     }
@@ -53,11 +54,6 @@
 
     #status {
       display: inline-block
-    }
-
-    svg {
-      overflow: visible;
-      overflow-clip-margin: 10px;
     }
   </style>
 </head>
@@ -190,7 +186,7 @@
 
       // Compute default domains, and unique the z-domain.
       if (xDomain === undefined) xDomain = d3.extent(X);
-      if (yDomain === undefined) yDomain = [Math.max(0,d3.min(Y, d => typeof d === "string" ? +d : d) - 10), d3.max(Y, d => typeof d === "string" ? +d : d)];
+      if (yDomain === undefined) yDomain = [Math.max(0, d3.min(Y, d => typeof d === "string" ? +d : d) - 10), d3.max(Y, d => typeof d === "string" ? +d : d)];
       if (zDomain === undefined) zDomain = Z;
       let legendData = zDomain;
       zDomain = new d3.InternSet(zDomain);
@@ -225,6 +221,15 @@
         .on("pointerleave", pointerleft)
         .on("touchstart", event => event.preventDefault());
 
+      // Add the brushing
+      const brush = d3.brushX()
+        .extent([[0, 0], [width, height]])
+        .on("end", updateChart);
+      svg
+        .append("g")
+        .attr("class", "brush")
+        .call(brush);
+
       // An optional Voronoi display (for fun).
       if (voronoi) svg.append("path")
         .attr("fill", "none")
@@ -234,7 +239,7 @@
           .voronoi([0, 0, width, height])
           .render());
 
-      svg.append("g")
+      const xSvg = svg.append("g")
         .attr("transform", `translate(0,${height - marginBottom})`)
         .call(xAxis);
 
@@ -259,6 +264,7 @@
         .attr("stroke-linejoin", strokeLinejoin)
         .attr("stroke-width", strokeWidth)
         .attr("stroke-opacity", strokeOpacity)
+        .attr("class", "line") // for brushing
         .selectAll("path")
         .data(d3.group(I, i => Z[i]))
         .join("path")
@@ -277,6 +283,51 @@
         .attr("font-size", 10)
         .attr("text-anchor", "middle")
         .attr("y", -8);
+
+
+      // A function that set idleTimeOut to null
+      let idleTimeout
+      function idled() { idleTimeout = null; }
+
+      function updateChart(event, d) {
+
+        // selected boundaries
+        extent = event.selection
+
+        // If no selection, back to initial coordinate. Otherwise, update X axis domain
+        if (!extent) {
+          if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // wait a little bit
+          xScale.domain([4, 8])
+        } else {
+          xScale.domain([xScale.invert(extent[0]), xScale.invert(extent[1])])
+          svg.select(".brush").call(brush.move, null) //  remove the grey brush area
+        }
+
+        // Update axis and line position
+        xSvg.transition().duration(1000).call(d3.axisBottom(xScale))
+        svg
+          .select('.line')
+          .selectAll("path")
+          .data(d3.group(I, i => Z[i]))
+          .join("path")
+          .style("mix-blend-mode", mixBlendMode)
+          .attr("stroke", typeof color === "function" ? ([z]) => color(z) : null)
+          .attr("d", ([, I]) => line(I));
+      }
+
+      // If user double click, reinitialize the chart
+      svg.on("dblclick", function () {
+        xScale.domain(d3.extent(data, function (d) { return d.date; }))
+        xSvg.transition().call(d3.axisBottom(xScale))
+        svg
+          .select('.line')
+          .selectAll("path")
+          .data(d3.group(I, i => Z[i]))
+          .join("path")
+          .style("mix-blend-mode", mixBlendMode)
+          .attr("stroke", typeof color === "function" ? ([z]) => color(z) : null)
+          .attr("d", ([, I]) => line(I));
+      });
 
       function pointermoved(event) {
         const [xm, ym] = d3.pointer(event);
