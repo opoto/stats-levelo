@@ -222,6 +222,7 @@
         .on("touchstart", event => event.preventDefault());
 
       // Add the brushing
+      /*
       const brush = d3.brushX()
         .extent([[0, 0], [width, height]])
         .on("end", updateChart);
@@ -229,6 +230,7 @@
         .append("g")
         .attr("class", "brush")
         .call(brush);
+      */
 
       // An optional Voronoi display (for fun).
       if (voronoi) svg.append("path")
