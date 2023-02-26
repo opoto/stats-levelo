@@ -38,6 +38,9 @@
     table td:first-child {
       min-width: 160px;
     }
+    table td:nth-child(2) {
+      min-width: 40px;
+    }
 
     footer {
       padding-top: 10px;
@@ -143,7 +146,11 @@
       }
     }
 
-    const dateFormat = d3.timeFormat("%d %b %Y, %H:%M");
+    let dateFormat = d3.timeFormat("%a %d %b %Y, %H:%M"); // default
+    d3.json(`https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/${navigator.language}.json`).then(locale => {
+      d3.timeFormatDefaultLocale(locale);
+      dateFormat = d3.timeFormat("%a %d %b %Y, %H:%M"); // localized
+    });
 
     function LineChart(data, id, {
       x = ([x]) => x, // given d in data, returns the (temporal) x-value
