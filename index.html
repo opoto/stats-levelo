@@ -58,8 +58,11 @@
       color: rgb(86, 139, 192);
     }
 
+    #month-next, #days-reset {
+      margin-right: 20px;
+    }
     #status {
-      display: inline-block
+      display: inline-block;
     }
   </style>
 </head>
@@ -77,6 +80,10 @@
     <button id="month-previous">&lt;&lt;</button>
     <select id="month-select"></select>
     <button id="month-next">&gt;&gt;</button>
+    <span class="i18n" i18n="days">Jours:</span>
+    <select class="day-select" id="day1-select"></select> ↔
+    <select class="day-select" id="day2-select"></select>
+    <button id="days-reset">x</button>
     <span id="status" class="i18n" i18n="loading">
       Chargement en cours
     </span>
@@ -133,6 +140,7 @@
           "info-intro": "Data is collected from",
           "info-data": "métropole Aix-Marseille's open data",
           "month": "Month displayed:",
+          "days": "Days:",
           "loading": "Loading...",
           "footer": 'This site is independent from "levélo". Content is not guaranteed to be exact.',
           "code": "Source code",
@@ -398,7 +406,29 @@
       }
     }
 
-    let lastData = {};
+    function displayData(data, config) {
+      config.chart.empty();
+      function colZ(z) {
+        return typeof (z) == "string" ? config.lines[z].color : undefined;
+      }
+      let linesLabels = Object.keys(config.lines);
+      let lineChart = LineChart(data, config.id, {
+        x: d => d.date,
+        y: d => d.value,
+        z: d => d.category,
+        width: 500,
+        height: 300,
+        color: colZ,
+        //yLabel: value.title,
+        zDomain: linesLabels,
+        title: (d) => d.value,
+        voronoi: false // if true, show Voronoi overlay
+      });
+      config.chart.append(lineChart);
+    }
+
+    const lastData = {};
+    const flatData = {};
     function processData(data, config) {
       if (--loading <= 0) {
         setStatus();
@@ -424,11 +454,11 @@
       });
 
       let linesLabels = Object.keys(config.lines);
-      let flat = [];
+      flatData[config.id] = [];
       $.each(data, (i, entry) => {
         $.each(entry, (name, value) => {
           if (linesLabels.includes(name)) {
-            flat.push({
+            flatData[config.id].push({
               date: entry.date,
               category: name,
               value: value,
@@ -436,30 +466,15 @@
           }
         });
       });
-      console.debug("flat:", flat);
+      console.debug("flat data for", config.id, flatData[config.id]);
 
-      function colZ(z) {
-        return typeof (z) == "string" ? config.lines[z].color : undefined;
-      }
-      let lineChart = LineChart(flat, config.id, {
-        x: d => d.date,
-        y: d => d.value,
-        z: d => d.category,
-        width: 500,
-        height: 300,
-        color: colZ,
-        //yLabel: value.title,
-        zDomain: linesLabels,
-        title: (d) => d.value,
-        voronoi: false // if true, show Voronoi overlay
-      });
-      config.chart.append(lineChart);
+      displayData(flatData[config.id], config);
 
     }
 
     const CONFIG = {
       "bikes": {
-        id: "b_",
+        id: "bikes_",
         table: $("#bikes-table"),
         chart: $("#bikes-chart"),
         lines: {
@@ -475,7 +490,7 @@
         }
       },
       "stations": {
-        id: "s_",
+        id: "stations_",
         table: $("#stations-table"),
         chart: $("#stations-chart"),
         lines: {
@@ -581,6 +596,46 @@
       $("#month-select").on("change", (event) => {
         load($("#month-select").val());
       });
+
+      function updateDays(month) {
+        $(".day-select").empty();
+        $(".day-select").append(`<option value="0"> </option>`);
+        let maxDay = new Date(1900, Number.parseInt(month), 0).getDate();
+        for (let d = 1; d <= maxDay; d++) {
+          $(".day-select").append(`<option value="${d}">${d}</option>`);
+        }
+      }
+      updateDays(currentMonth.month);
+
+      function selectedDays() {
+        let day1 = $("#day1-select option:selected").val();
+        let day2 = $("#day2-select option:selected").val();
+        let dayMin = Math.min(day1, day2);
+        let dayMax = Math.max(day1, day2);
+        if ((dayMin == 0) && (dayMax > 0)) {
+          dayMin = dayMax;
+        }
+        $.each(CONFIG, (i, config) => {
+          let dayData = [];
+          if (dayMin == 0) {
+            dayData = flatData[config.id];
+          } else {
+              $.each(flatData[config.id], (j,row)=> {
+                let d = row.date.getDate();
+                if ((d >= dayMin) && (d <= dayMax)) {
+                dayData.push(row);
+              }
+            });
+          }
+          displayData(dayData, config);
+        });
+      }
+      $(".day-select").on("change", selectedDays);
+      $("#days-reset").on("click", () => {
+        $(".day-select").val(0);
+        selectedDays();
+      });
+
       function updateMonth(op) {
         setStatus();
         let selected = $("#month-select option:selected");
@@ -588,6 +643,7 @@
         let newPrefix = selMonth[op]();
         if (newPrefix) {
           $("#month-select").val(newPrefix);
+          updateDays(selected.attr("month"));
           load(newPrefix);
         } else {
           setStatus(i18n.get("no_data"));
