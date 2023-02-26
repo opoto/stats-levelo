@@ -18,8 +18,8 @@ bikes_for_rent=$(jq '.data.stations[] | select (.is_renting==true) | .num_bikes_
 
 stations_date=$(jq '.last_updated ' data/station_status.json)
 stations_nb=$(jq '.data.stations[].station_id ' data/station_status.json | wc -l)
-stations_renting=$(jq '.data.stations[] | select ((.is_renting==true) and (.num_bikes_available>0)) | .station_id ' data/station_status.json | wc -l)
-stations_returning=$(jq '.data.stations[] | select ((.is_returning==true) and (.num_docks_available>0)) | .station_id ' data/station_status.json | wc -l)
+stations_renting=$(jq '.data.stations[] | select ((.is_installed==true) and (.is_renting==true) and (.num_bikes_available>0)) | .station_id ' data/station_status.json | wc -l)
+stations_returning=$(jq '.data.stations[] | select ((.is_installed==true) and (.is_returning==true) and (.num_docks_available>0)) | .station_id ' data/station_status.json | wc -l)
 stations_not_installed=$(jq '.data.stations[] | select (.is_installed==false) | .station_id ' data/station_status.json | wc -l)
 stations_not_renting=$(jq '.data.stations[] | select (.is_renting==false) | .station_id ' data/station_status.json | wc -l)
 stations_not_returning=$(jq '.data.stations[] | select (.is_returning==false) | .station_id ' data/station_status.json | wc -l)
