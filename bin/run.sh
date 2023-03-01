@@ -58,7 +58,7 @@ create_if_missing () {
   if [ ! -f ${1} ]
   then
     echo ${3} > ${1}
-    git add ${1}
+    #git add ${1}
     gitmsg="${gitmsg}New ${2}. "
   fi
 }
@@ -75,6 +75,7 @@ create_if_missing () {
     create_if_missing ${stations_year_csv} "year" "date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning"
     tail -n ${nlines} ${stations_month_csv} | awk -F',' '{ c1=$1; c2+=$2; c3+=$3; c4+=$4; c5+=$5;c6+=$6; c7+=$7;c8+=$8} END {print c1","int(c2/NR)","int(c3/NR)","int(c4/NR)","int(c5/NR)","int(c6/NR)","int(c7/NR)","int(c8/NR)}' >> ${stations_year_csv}
   fi
+echo $gitmsg
 
 if [ "$2" != "-noout" ]
 then
