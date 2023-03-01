@@ -539,12 +539,14 @@
         this.month = month ? Number.parseInt(month) : NOW.getMonth() + 1;
       }
       getFilePrefix() {
-        return `${this.year}-${zeroed(this.month, 2)}`;
+        return this.month == 0 ? `${this.year}` : `${this.year}-${zeroed(this.month, 2)}`;
       }
       nextMonth() {
         if (this.getFilePrefix() < currentMonth.getFilePrefix()) {
           if (this.month < 12) {
-            this.month++;
+            do {
+              this.month++;
+            } while ((this.year == FIRST_YEAR) && (this.month < FIRST_MONTH));
           } else {
             this.year++;
             this.month = 1;
@@ -587,7 +589,12 @@
       let currentPrefix = currentMonth.getFilePrefix();
       let optMonth = new FileMonth(FIRST_YEAR, FIRST_MONTH);
       let optPrefix = optMonth.getFilePrefix();
+      let yearAdded = {};
       while (optPrefix <= currentPrefix) {
+        if (!yearAdded[optMonth.year]) {
+          $("#month-select").append(`<option value="${optMonth.year}" year=${optMonth.year} month=0>${optMonth.year}</option>`);
+          yearAdded[optMonth.year] = true;
+        }
         $("#month-select").append(`<option value="${optPrefix}" year=${optMonth.year} month=${optMonth.month}>${optPrefix}</option>`);
         optPrefix = optMonth.nextMonth();
       }
@@ -595,11 +602,15 @@
       $("#month-select").val(currentPrefix);
       $("#month-select").on("change", (event) => {
         load($("#month-select").val());
+        updateDays($("#month-select option:selected").attr("month"));
       });
 
       function updateDays(month) {
         $(".day-select").empty();
         $(".day-select").append(`<option value="0"> </option>`);
+        if (month == 0) {
+          return;
+        }
         let maxDay = new Date(1900, Number.parseInt(month), 0).getDate();
         for (let d = 1; d <= maxDay; d++) {
           $(".day-select").append(`<option value="${d}">${d}</option>`);
@@ -643,7 +654,7 @@
         let newPrefix = selMonth[op]();
         if (newPrefix) {
           $("#month-select").val(newPrefix);
-          updateDays(selected.attr("month"));
+          updateDays(selMonth.month);
           load(newPrefix);
         } else {
           setStatus(i18n.get("no_data"));
