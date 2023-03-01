@@ -2,10 +2,9 @@
 
 if [ "$1" != "-local" ]
 then
-  echo skipping
-  #curl -o data/free_bike_status.json "https://api.omega.fifteen.eu/gbfs/2.2/marseille/en/free_bike_status.json?&key=MjE0ZDNmMGEtNGFkZS00M2FlLWFmMWItZGNhOTZhMWQyYzM2"
-  #curl -o data/station_status.json "https://api.omega.fifteen.eu/gbfs/2.2/marseille/en/station_status.json?&key=MjE0ZDNmMGEtNGFkZS00M2FlLWFmMWItZGNhOTZhMWQyYzM2"
-  #curl -o data/station_information.json "https://api.omega.fifteen.eu/gbfs/2.2/marseille/en/station_information.json?&key=MjE0ZDNmMGEtNGFkZS00M2FlLWFmMWItZGNhOTZhMWQyYzM2"
+  curl -o data/free_bike_status.json "https://api.omega.fifteen.eu/gbfs/2.2/marseille/en/free_bike_status.json?&key=MjE0ZDNmMGEtNGFkZS00M2FlLWFmMWItZGNhOTZhMWQyYzM2"
+  curl -o data/station_status.json "https://api.omega.fifteen.eu/gbfs/2.2/marseille/en/station_status.json?&key=MjE0ZDNmMGEtNGFkZS00M2FlLWFmMWItZGNhOTZhMWQyYzM2"
+  curl -o data/station_information.json "https://api.omega.fifteen.eu/gbfs/2.2/marseille/en/station_information.json?&key=MjE0ZDNmMGEtNGFkZS00M2FlLWFmMWItZGNhOTZhMWQyYzM2"
 fi
 
 current_year=$(date +"%Y")
@@ -78,7 +77,6 @@ then
   create_if_missing ${stations_month_csv} "month" "date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning"
   echo $stations_date,$stations_nb,$stations_ready,$stations_renting,$stations_returning,$stations_not_installed,$stations_not_renting,$stations_not_returning>> ${stations_month_csv}
 
-echo  "is $current_hour  == $AVG_HOUR?"
   if [ "$current_hour" = "$AVG_HOUR" ]
   then
     create_if_missing ${bikes_year_csv} "year" "date,bikes_nb,for_rent,disabled,reserved,no_station"
@@ -92,6 +90,6 @@ echo  "is $current_hour  == $AVG_HOUR?"
     tail -n ${nlines} ${stations_month_csv} | awk -F',' '{ c1=$1; c2+=$2; c3+=$3; c4+=$4; c5+=$5;c6+=$6; c7+=$7;c8+=$8} END {print c1","int(c2/NR)","int(c3/NR)","int(c4/NR)","int(c5/NR)","int(c6/NR)","int(c7/NR)","int(c8/NR)}' >> ${stations_year_csv}
   fi
 
-  #git commit -a -m "${gitmsg}Data updated"
-  #git push
+  git commit -a -m "${gitmsg}Data updated"
+  git push
 fi
