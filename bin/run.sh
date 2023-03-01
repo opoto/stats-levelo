@@ -78,7 +78,7 @@ then
   create_if_missing ${stations_month_csv} "month" "date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning"
   echo $stations_date,$stations_nb,$stations_ready,$stations_renting,$stations_returning,$stations_not_installed,$stations_not_renting,$stations_not_returning>> ${stations_month_csv}
 
-echo  "is $current_hour  == $AVG_HOUR?"
+echo  "is $current_hour  = $AVG_HOUR?"
   if [ "$current_hour" = "$AVG_HOUR" ]
   then
     create_if_missing ${bikes_year_csv} "year" "date,bikes_nb,for_rent,disabled,reserved,no_station"
