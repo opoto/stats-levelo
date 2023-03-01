@@ -44,16 +44,25 @@ echo Not installed: $stations_not_installed
 echo Not renting: $stations_not_renting
 echo Not returning: $stations_not_returning
 
+bikes_csv=data/${current_month}_bikes.csv
+stations_csv=data/${current_month}_stations.csv
+
 if [ "$2" != "-noout" ]
 then
-  if [ ! -f data/${current_month}_bikes.csv ]
+  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+  git config --local user.name "github-actions[bot]"
+  if [ ! -f ${bikes_csv} ]
   then
-    echo "date,bikes_nb,for_rent,disabled,reserved,no_station" > data/${current_month}_bikes.csv
+    echo "date,bikes_nb,for_rent,disabled,reserved,no_station" > ${bikes_csv}
+    git add ${bikes_csv}
   fi
-  echo $bikes_date,$bikes_nb,$bikes_for_rent,$bikes_disabled,$bikes_reserved,$bikes_no_station>> data/${current_month}_bikes.csv
-  if [ ! -f data/${current_month}_stations.csv ]
+  echo $bikes_date,$bikes_nb,$bikes_for_rent,$bikes_disabled,$bikes_reserved,$bikes_no_station>> ${bikes_csv}
+  if [ ! -f ${stations_csv} ]
   then
-    echo "date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning" > data/${current_month}_stations.csv
+    echo "date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning" > ${stations_csv}
+    git add ${stations_csv}
   fi
-  echo $stations_date,$stations_nb,$stations_ready,$stations_renting,$stations_returning,$stations_not_installed,$stations_not_renting,$stations_not_returning>> data/${current_month}_stations.csv
+  echo $stations_date,$stations_nb,$stations_ready,$stations_renting,$stations_returning,$stations_not_installed,$stations_not_renting,$stations_not_returning>> ${stations_csv}
+  git commit -a -m "Data updated"
+  git push
 fi
