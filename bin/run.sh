@@ -28,8 +28,11 @@ stations_not_renting=$(jq '.data.stations[] | select (.is_renting==false) | .sta
 stations_not_returning=$(jq '.data.stations[] | select (.is_returning==false) | .station_id ' data/station_status.json | wc -l)
 stations_ready=$(jq '.data.stations[] | select ((.is_installed==true) and (.is_renting==true) and (.is_returning==true))| .station_id ' data/station_status.json | wc -l)
 
+echo Current hour: $current_hour
+echo
+
 echo "BIKES"
-echo Date: $(date -j -f "%s" +"%Y-%m-%d %H:%M:%S" $bikes_date)
+echo Date: $(date -d @$bikes_date)
 echo Total: $bikes_nb
 echo For rent: $bikes_for_rent
 echo Disabled: $bikes_disabled
@@ -38,7 +41,7 @@ echo No station: $bikes_no_station
 echo
 
 echo "STATIONS"
-echo Date: $(date -j -f "%s" +"%Y-%m-%d %H:%M:%S" $stations_date)
+echo Date: $(date -d @$stations_date)
 echo Total: $stations_nb
 echo Ready: $stations_ready
 echo Renting: $stations_renting
