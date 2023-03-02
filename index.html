@@ -6,7 +6,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ce site fournit des statistiques sur les vélos et stations en location par la métropole Aix-Marseille">
+  <meta name="description"
+    content="Ce site fournit des statistiques sur les vélos et stations en location par la métropole Aix-Marseille">
   <meta name="keywords" content="Marseille, métropole, levélo, levelo, vélo">
 
   <title class="i18n" i18n="title">Statistiques du service "levélo Marseille"</title>
@@ -58,9 +59,11 @@
       color: rgb(86, 139, 192);
     }
 
-    #month-next, #days-reset {
+    #month-next,
+    #days-reset {
       margin-right: 20px;
     }
+
     #status {
       display: inline-block;
     }
@@ -167,7 +170,7 @@
         let v = i18n.strings[i18n.current][name];
         return v ? v : i18n.strings[i18n.default][name];
       }
-    }
+    };
     $(".i18n").each((i, elt) => {
       let key = elt.getAttribute("i18n");
       let translated = key ? i18n.get(key) : undefined;
@@ -325,25 +328,25 @@
 
 
       // A function that set idleTimeOut to null
-      let idleTimeout
+      let idleTimeout;
       function idled() { idleTimeout = null; }
 
       function updateChart(event, d) {
 
         // selected boundaries
-        extent = event.selection
+        extent = event.selection;
 
         // If no selection, back to initial coordinate. Otherwise, update X axis domain
         if (!extent) {
           if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // wait a little bit
-          xScale.domain([4, 8])
+          xScale.domain([4, 8]);
         } else {
-          xScale.domain([xScale.invert(extent[0]), xScale.invert(extent[1])])
-          svg.select(".brush").call(brush.move, null) //  remove the grey brush area
+          xScale.domain([xScale.invert(extent[0]), xScale.invert(extent[1])]);
+          svg.select(".brush").call(brush.move, null); //  remove the grey brush area
         }
 
         // Update axis and line position
-        xSvg.transition().duration(1000).call(d3.axisBottom(xScale))
+        xSvg.transition().duration(1000).call(d3.axisBottom(xScale));
         svg
           .select('.line')
           .selectAll("path")
@@ -356,8 +359,8 @@
 
       // If user double click, reinitialize the chart
       svg.on("dblclick", function () {
-        xScale.domain(d3.extent(data, function (d) { return d.date; }))
-        xSvg.transition().call(d3.axisBottom(xScale))
+        xScale.domain(d3.extent(data, function (d) { return d.date; }));
+        xSvg.transition().call(d3.axisBottom(xScale));
         svg
           .select('.line')
           .selectAll("path")
@@ -563,6 +566,9 @@
             this.month = 12;
           }
           return this.getFilePrefix();
+        } else if (this.month > 0) {
+          this.month = 0;
+          return this.getFilePrefix();
         }
       }
     }
@@ -631,9 +637,9 @@
           if (dayMin == 0) {
             dayData = flatData[config.id];
           } else {
-              $.each(flatData[config.id], (j,row)=> {
-                let d = row.date.getDate();
-                if ((d >= dayMin) && (d <= dayMax)) {
+            $.each(flatData[config.id], (j, row) => {
+              let d = row.date.getDate();
+              if ((d >= dayMin) && (d <= dayMax)) {
                 dayData.push(row);
               }
             });
