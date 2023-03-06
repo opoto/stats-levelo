@@ -115,3 +115,4 @@ date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning
 1678053989,123,95,95,119,0,28,0
 1678057623,123,95,96,118,0,27,1
 1678063405,123,92,92,118,0,31,0
+1678069174,123,100,103,117,0,20,3
