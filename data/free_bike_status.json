@@ -1,1 +1,1 @@
-{"last_updated":1688288795,"ttl":30,"version":"2.2","data":{"bikes":[{"bike_id":"5a4f2feb-253a-4668-a091-0fcfbcfa86ec","system_id":"levelo_inurba_marseille","lat":43.32823,"lon":5.36668,"is_reserved":false,"is_disabled":false,"rental_uris":{"android":"levelo://app?vid=5a4f2feb-253a-4668-a091-0fcfbcfa86ec","ios":"levelo://app?vid=5a4f2feb-253a-4668-a091-0fcfbcfa86ec"},"vehicle_type_id":"4","last_reported":1688288796,"current_range_meters":9600,"station_id":"","pricing_plan_id":"free"}]}}
+{"last_updated":1688292432,"ttl":30,"version":"2.2","data":{"bikes":[]}}
