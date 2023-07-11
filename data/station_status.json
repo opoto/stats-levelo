@@ -1,1 +1,1 @@
-{"last_updated":1689030447,"ttl":30,"version":"2.2","data":{"stations":[]}}
+{"last_updated":1689036089,"ttl":30,"version":"2.2","data":{"stations":[{"station_id":"ce501612rcd8frsf0b60","num_bikes_available":0,"num_docks_available":20,"is_installed":true,"is_renting":false,"is_returning":true,"last_reported":1689036089},{"station_id":"chh1huq6cuj3fo74tm60","num_bikes_available":0,"num_docks_available":20,"is_installed":true,"is_renting":false,"is_returning":true,"last_reported":1689036089}]}}
