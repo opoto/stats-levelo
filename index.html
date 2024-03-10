@@ -75,7 +75,7 @@
 
   <div class="scope-div">
     <span class="i18n" i18n="scope">Période :</span>
-    <select id="scope">
+    <select id="scope" disabled="disabled">
       <option value="3" class="i18n" i18n="months3">3 derniers mois</option>
       <option value="6" class="i18n" i18n="months6">6 derniers mois</option>
       <option value="12" class="i18n" i18n="months12">12 derniers mois</option>
@@ -84,9 +84,13 @@
   </div>
   <hr>
   <div id="content">
-    <div id="bikes-chart" class="chart"></div>
+    <div id="bikes-chart" class="chart">
+      <div class='status' class="i18n" i18n="loading"></div>
+    </div>
     <hr>
-    <div id="stations-chart" class="chart"></div>
+    <div id="stations-chart" class="chart">
+      <div class='status' class="i18n" i18n="loading"></div>
+    </div>
   </div>
   <hr>
   <footer>
@@ -170,10 +174,7 @@
       }
     });
 
-    function displaySeries(type, series, colors, domElement) {
-      if (--loading <= 0) {
-        setStatus(domElement);
-      }
+    function displaySeries(type, series, colors, domSelector) {
 
       const WEEK = 24 * 7;
       const eChartOptions = {
@@ -217,13 +218,18 @@
       console.debug(eChartOptions);
       // Initialize the echarts instance based on the prepared dom
 
-      let myChart = echarts.getInstanceByDom(domElement);
+      let myChart = echarts.getInstanceByDom($(domSelector)[0]);
       if (myChart) {
         myChart.dispose();
       }
-      myChart = echarts.init(domElement);
+      setStatus(domSelector); // clear
+      myChart = echarts.init($(domSelector)[0]);
       // Display the chart using the configuration items and data just specified.
       myChart.setOption(eChartOptions);
+
+      if (--loading <= 0) {
+        $("#scope").prop("disabled", false);
+      }
     }
 
     const CONFIG = {
@@ -273,8 +279,8 @@
       for (type of ["bikes", "stations"]) {
         try {
 
-          const domChart = document.getElementById(CONFIG[type].chart);
-          setStatus(domChart, "loading");
+          const selectorChart = "#" + CONFIG[type].chart;
+          setStatus(selectorChart, "loading");
           let series, colors = [];
 
           // for each date
@@ -320,24 +326,26 @@
             }
           }
 
-          displaySeries(type, series, colors, domChart);
+          displaySeries(type, series, colors, selectorChart);
         } catch (err) {
           console.error(err);
-          setStatus(domType, "load_error");
+          setStatus(selectorChart, "load_error");
         }
       }
     }
 
     const NOW = new Date();
 
-    let loading = 2;
-    function setStatus(domElement, messageId) {
-      domElement.innerHTML = messageId ?
+    let loading;
+    function setStatus(selector, messageId) {
+      $(selector).html(messageId ?
         `<div class='status'>${i18n.get(messageId)}</div>`
-        : "";
+        : "");
     }
 
     function loadFromScope() {
+      $("#scope").prop("disabled", true);
+      loading = 2;
       $(".chart").empty();
       const twoDigitsMonth = (month) => ("0" + (month + 1)).slice(-2);
       let dates = [];
@@ -373,7 +381,6 @@
           scope--;
         }
 
-
       }
 
       // do the loading!
@@ -382,7 +389,10 @@
     }
 
     $("#scope").on("change", loadFromScope);
-    loadFromScope();
+
+    $(document).ready( () => {
+      loadFromScope();
+    });
 
   </script>
 </body>
