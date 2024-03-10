@@ -180,9 +180,9 @@
       }
     });
 
+    let charts;
     function displaySeries(type, series, colors, domSelector) {
 
-      const WEEK = 24 * 7;
       const eChartOptions = {
         title: {
           left: 100,
@@ -207,15 +207,6 @@
             end: 100
           }
         ],
-        toolbox: {
-          feature: {
-            dataZoom: {
-              yAxisIndex: 'none'
-            },
-            restore: {},
-            saveAsImage: {}
-          }
-        },
         yAxis: {
         },
         series: series
@@ -232,6 +223,18 @@
       myChart = echarts.init($(domSelector)[0]);
       // Display the chart using the configuration items and data just specified.
       myChart.setOption(eChartOptions);
+      charts[type] = myChart;
+      myChart.on("datazoom", (event) => {
+        let index = (SERIES.indexOf(type) + 1) % 2;
+        if (!event.dispatched) {
+          charts[SERIES[index]].dispatchAction({
+            type: 'dataZoom',
+            start: event.start,
+            end: event.end,
+            dispatched: true
+          });
+        }
+      });
 
       if (--loading <= 0) {
         $("#scope").prop("disabled", false);
@@ -280,9 +283,13 @@
         ]
       }
     };
+    const FIRST_YEAR = 2023;
+    const FIRST_MONTH = 1;
+    const SERIES = ["bikes", "stations"];
 
     async function load(dates) {
-      for (type of ["bikes", "stations"]) {
+      charts = {};
+      for (let type of SERIES) {
         try {
 
           const selectorChart = "#" + CONFIG[type].chart;
@@ -353,21 +360,34 @@
       $("#scope").prop("disabled", true);
       loading = 2;
       $(".chart").empty();
-      const twoDigitsMonth = (month) => ("0" + (month + 1)).slice(-2);
       let dates = [];
       let scope = $("#scope").val();
+      const monthFormatter = (month, year) =>
+        year.toString() + "-" + ("0" + (month + 1)).slice(-2);
 
       if (scope == "all") {
 
         // all times
         const currentYear = NOW.getFullYear();
-        let year = 2023;
+        let year = FIRST_YEAR;
         while (true) {
           dates.push(year.toString());
           year++;
           if (year > currentYear) {
             break;
           }
+        }
+
+      } else if (scope.startsWith("2")) {
+
+        // a specific year
+        let year = Number.parseInt(scope);
+        let month = year == FIRST_YEAR ? FIRST_MONTH : 0;
+        let lastMonth = year == NOW.getFullYear() ? NOW.getMonth() : 11;
+        while (month <= lastMonth) {
+          const date = monthFormatter(month, year);
+          dates.push(date);
+          month++;
         }
 
       } else {
@@ -377,7 +397,7 @@
         let year = NOW.getFullYear();
         let month = NOW.getMonth();
         while (scope > 0) {
-          const date = year.toString() + "-" + twoDigitsMonth(month);
+          const date = monthFormatter(month, year);
           dates.unshift(date);
           month = (month - 1);
           if (month < 0) {
@@ -394,9 +414,13 @@
       load(dates);
     }
 
+    let year = FIRST_YEAR;
+    while (year <= NOW.getFullYear()) {
+      $("#scope").append(`<option value="${year}">${year++}</option>`);
+    }
     $("#scope").on("change", loadFromScope);
 
-    $(document).ready( () => {
+    $(document).ready(() => {
       loadFromScope();
     });
 
