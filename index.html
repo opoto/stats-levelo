@@ -25,6 +25,7 @@
       border-top: 1px solid black;
       padding-top: 10px;
     }
+
     .scope-div {
       text-align: center;
       width: 100%;
@@ -32,7 +33,7 @@
 
     .chart {
       width: 100%;
-      height:400px;
+      height: 400px;
       margin: 10px;
       display: inline-block;
       vertical-align: middle;
@@ -74,19 +75,20 @@
 
   <div class="scope-div">
     <span class="i18n" i18n="scope">Période :</span>
-    <label>
-      <input type="radio" name="scope" value="year" checked="checked">
-      <span class="i18n" i18n="last-year">12 derniers mois</span>
-    </label>
-    <label>
-      <input type="radio" name="scope" value="all">
-      <span class="i18n" i18n="all-times">Depuis le début</span>
-    </label>
+    <select id="scope">
+      <option value="3" class="i18n" i18n="months3">3 derniers mois</option>
+      <option value="6" class="i18n" i18n="months6">6 derniers mois</option>
+      <option value="12" class="i18n" i18n="months12">12 derniers mois</option>
+      <option value="all" class="i18n" i18n="all-times">Depuis le début</option>
+    </select>
   </div>
+  <hr>
   <div id="content">
-      <div id="bikes-chart" class="chart"></div>
-      <div id="stations-chart" class="chart"></div>
+    <div id="bikes-chart" class="chart"></div>
+    <hr>
+    <div id="stations-chart" class="chart"></div>
   </div>
+  <hr>
   <footer>
     <span class="i18n" i18n="footer">
       Ce site n'est pas affilié au service "levélo". Les données ne sont pas garanties exactes.
@@ -95,7 +97,9 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/cash-dom/dist/cash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js" integrity="sha512-k37wQcV4v2h6jgYf5IUz1MoSKPpDs630XGSmCaCCOXxy2awgAWKHGZWr9nMyGgk3IOxA1NxdkN8r1JHgkUtMoQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"
+    integrity="sha512-k37wQcV4v2h6jgYf5IUz1MoSKPpDs630XGSmCaCCOXxy2awgAWKHGZWr9nMyGgk3IOxA1NxdkN8r1JHgkUtMoQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
 
     const i18n = {
@@ -127,7 +131,9 @@
           "info-intro": "Data is collected from",
           "info-data": "métropole Aix-Marseille's open data",
           "scope": "Considered period:",
-          "last-year": "12 last months",
+          "months3": "Last 3 months",
+          "months6": "Last 6 months",
+          "months12": "Last 12 months",
           "all-times": "All times",
           "loading": "Loading...",
           "footer": 'This site is independent from "levélo". Content is not guaranteed to be exact.',
@@ -169,7 +175,7 @@
         setStatus(domElement);
       }
 
-      const WEEK = 24*7;
+      const WEEK = 24 * 7;
       const eChartOptions = {
         title: {
           left: 100,
@@ -327,33 +333,17 @@
     let loading = 2;
     function setStatus(domElement, messageId) {
       domElement.innerHTML = messageId ?
-       `<div class='status'>${i18n.get(messageId)}</div>`
-       : "";
+        `<div class='status'>${i18n.get(messageId)}</div>`
+        : "";
     }
 
     function loadFromScope() {
       $(".chart").empty();
       const twoDigitsMonth = (month) => ("0" + (month + 1)).slice(-2);
       let dates = [];
-      if ($("input[name=scope]:checked").val() == "year") {
+      let scope = $("#scope").val();
 
-        // last 12 months
-        const current = NOW.getFullYear().toString() + "-" + twoDigitsMonth(NOW.getMonth());
-        let year = NOW.getFullYear() - 1;
-        let month = NOW.getMonth();
-        while (true) {
-          month = (month + 1) % 12;
-          if (month == 0) {
-            year++;
-          }
-          const date = year.toString() + "-" + twoDigitsMonth(month);
-          dates.push(date);
-          if (date == current) {
-            break;
-          }
-        }
-
-      } else {
+      if (scope == "all") {
 
         // all times
         const currentYear = NOW.getFullYear();
@@ -366,6 +356,24 @@
           }
         }
 
+      } else {
+
+        // last N months
+        scope = Number.parseInt(scope);
+        let year = NOW.getFullYear();
+        let month = NOW.getMonth();
+        while (scope > 0) {
+          const date = year.toString() + "-" + twoDigitsMonth(month);
+          dates.unshift(date);
+          month = (month - 1);
+          if (month < 0) {
+            month = 11;
+            year--;
+          }
+          scope--;
+        }
+
+
       }
 
       // do the loading!
@@ -373,7 +381,7 @@
       load(dates);
     }
 
-    $("input[name=scope]").on("change", loadFromScope);
+    $("#scope").on("change", loadFromScope);
     loadFromScope();
 
   </script>
