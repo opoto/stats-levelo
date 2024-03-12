@@ -87,6 +87,11 @@
       <option value="12" class="i18n" i18n="months12">12 derniers mois</option>
       <option value="all" class="i18n" i18n="all-times">Depuis le début</option>
     </select>
+    <label>
+      <input type="checkbox" id="smooth" factor="4" start="3" checked="checked"
+        comment="factor:[1-24], start:[0-23]">
+      <span class="i18n" i18n="smooth">Adoucir la courbe</span>
+    </label>
   </div>
   <hr>
   <div id="content">
@@ -145,6 +150,7 @@
           "months6": "Last 6 months",
           "months12": "Last 12 months",
           "all-times": "All times",
+          "smooth": "Smooth the diagram",
           "loading": "Loading...",
           "footer": 'This site is independent from "levélo". Content is not guaranteed to be exact.',
           "code": "Source code",
@@ -223,6 +229,8 @@
       myChart = echarts.init($(domSelector)[0]);
       // Display the chart using the configuration items and data just specified.
       myChart.setOption(eChartOptions);
+
+      // Synchronize timelines: propagate datazoom events between the 2 timelines
       charts[type] = myChart;
       myChart.on("datazoom", (event) => {
         let index = (SERIES.indexOf(type) + 1) % 2;
@@ -284,10 +292,26 @@
       }
     };
     const FIRST_YEAR = 2023;
-    const FIRST_MONTH = 1;
+    const FIRST_MONTH = 1; // feb 2023
     const SERIES = ["bikes", "stations"];
 
     async function load(dates) {
+
+      // smoothing config
+      const smooth_start = Number.parseInt($("#smooth").attr("start"));
+      const smooth_factor = Number.parseInt($("#smooth").attr("factor"));
+      const smooth_every = Math.floor(24 / smooth_factor);
+      const doSmoothing = $("#smooth").prop("checked")
+        && (dates[0].indexOf("-") > 0);
+
+      const getDateIndex = (date) => {
+        const d = new Date(date * 1000);
+        return smooth_factor > 1 ?
+          Math.floor((d.getHours() + 24 - smooth_start) / smooth_every) % smooth_factor
+          : (d.getHours() < smooth_start ? new Date(d.getTime() - 24 * 3600000).getDate() : d.getDate());
+      };
+      const hoursDiffBigger = (prev, next, diff) =>
+        (next - prev) > (diff * 3600);
       charts = {};
       for (let type of SERIES) {
         try {
@@ -296,6 +320,7 @@
           setStatus(selectorChart, "loading");
           let series, colors = [];
 
+          let dateIndex;
           // for each date
           for (let date of dates) {
 
@@ -314,6 +339,7 @@
                     name: i18n.get(values[seriesLine.index]),
                     type: 'line',
                     symbolSize: 0,
+                    smooth: 0.3,
                     data: []
                   });
                   colors.push(seriesLine.color);
@@ -322,16 +348,30 @@
                 // ignore header or error lines
               } else {
                 // data line, starting by date
-                const intDate = Number.parseInt(values[0]);
-                const dateSample = !isNaN(intDate) && new Date(1000 * intDate);
+                const dateSec = Number.parseInt(values[0]);
+                const dateSample = !isNaN(dateSec) && new Date(1000 * dateSec);
                 // only process lines with valid date
                 if (dateSample) {
-                  let i = 0;
-                  for (let seriesLine of CONFIG[type].lines) {
-                    const vSample = Number.parseInt(values[seriesLine.index]);
-                    // only add valid values
-                    if (!isNaN(vSample)) {
-                      series[i++].data.push([dateSample, vSample]);
+
+
+                  let keep = true;
+                  // smoothing?
+                  if (doSmoothing) {
+                    if (getDateIndex(dateSec) != dateIndex) {
+                      dateIndex = getDateIndex(dateSec);
+                    } else {
+                      keep = false;
+                    }
+                  }
+
+                  if (keep) {
+                    let i = 0;
+                    for (let seriesLine of CONFIG[type].lines) {
+                      const vSample = Number.parseInt(values[seriesLine.index]);
+                      // only add valid values
+                      if (!isNaN(vSample)) {
+                        series[i++].data.push([dateSample, vSample]);
+                      }
                     }
                   }
                 }
@@ -365,6 +405,7 @@
       const monthFormatter = (month, year) =>
         year.toString() + "-" + ("0" + (month + 1)).slice(-2);
 
+      $("#smooth").prop("disabled", false);
       if (scope == "all") {
 
         // all times
@@ -377,6 +418,8 @@
             break;
           }
         }
+        $("#smooth").prop("disabled", true);
+        $("#smooth").prop("checked", true);
 
       } else if (scope.startsWith("2")) {
 
@@ -410,7 +453,6 @@
       }
 
       // do the loading!
-      console.debug(dates);
       load(dates);
     }
 
@@ -419,6 +461,7 @@
       $("#scope").append(`<option value="${year}">${year++}</option>`);
     }
     $("#scope").on("change", loadFromScope);
+    $("#smooth").on("change", loadFromScope);
 
     $(document).ready(() => {
       loadFromScope();
