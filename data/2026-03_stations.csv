@@ -48,3 +48,4 @@ date,stations_nb,ready,renting,returning,not_installed,not_renting,not_returning
 1772523294,223,223,199,219,0,0,0
 1772526463,223,223,185,215,0,0,0
 1772530243,223,223,197,215,0,0,0
+1772533738,223,222,197,217,0,1,1
