@@ -11,6 +11,21 @@
   <meta name="keywords" content="Marseille, métropole, levélo, levelo, vélo">
 
   <title class="i18n" i18n="title">Statistiques du service "levélo Marseille"</title>
+
+  <!-- privacy-friendly usage stats -->
+  <script>
+    window.goatcounter = {
+      path: function(p) { return location.host + p } // add domain name
+    }
+    // Only load on production environment, and manually opted-out
+    if ((window.location.host !== 'opoto.github.io') ||
+      (localStorage.getItem("goatcounter." + location.host) === "false") ||
+      (localStorage.getItem("goatcounter.ALL") === "false")) {
+      window.goatcounter.no_onload = true;
+    }
+  </script>
+  <script data-goatcounter="https://stats-levelo.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+
   <style>
     html {
       font-family: sans-serif;
